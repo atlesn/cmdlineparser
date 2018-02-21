@@ -1,5 +1,5 @@
 # Command Line Parser
-Command line parser for C. Parse argc and argv and store argument=value pairs
+Command line parser for C. Parse argc and argv and store `argument=value` pairs
 for later retrieval or converting to numeric types.
 
 # Usage
@@ -20,10 +20,10 @@ for later retrieval or converting to numeric types.
 
 # Memory usage
 Memory may be tuned with the parameters `CMD_MAXIMUM_CMDLINE_ARGS` and `CMD_MAXIMUM_CMDLINE_ARG_SIZE`. Memory
-usage on the stack is `CMD_MAXIMUM_CMDLINE_ARGS * CMD_MAXIMUM_CMDLINE_ARG_SIZE * 2` along with a set of numeric
-types for every argument. Command Line Parser uses no dynamic memory.
+usage on the stack (or heap if malloc'ed) is `CMD_MAXIMUM_CMDLINE_ARGS * CMD_MAXIMUM_CMDLINE_ARG_SIZE * 2`
+along with a set of numeric types for every argument. Command Line Parser uses no dynamic memory.
 
-If arguments exceed the limits, the program crashes. Only arguments containing '='
+If arguments exceed the limits, the program crashes. Only arguments containing `=`
 have this size limit, the other arguments are not copied but pointed to.
 
 If the memory pointed to by `*argv[]` argument for `cmd_parse()` is deallocated, no more functions
