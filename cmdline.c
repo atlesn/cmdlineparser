@@ -284,10 +284,10 @@ const char *cmd_get_last_argument(struct cmd_data *data) {
 }
 
 int cmd_parse(struct cmd_data *data, int argc, const char *argv[], unsigned long int config) {
+	cmd_init(data);
+
 	data->program = argv[0];
 	data->command = cmd_help;
-
-	cmd_init(data);
 
 	if (argc <= 1) {
 		return 0;
@@ -296,10 +296,10 @@ int cmd_parse(struct cmd_data *data, int argc, const char *argv[], unsigned long
 	int argc_begin = 2;
 
 	if ((config & CMD_CONFIG_NOCOMMAND) > 0) {
-		data->command = "";
+		data->command = cmd_blank_argument;
 		argc_begin = 1;
 	}
-	else {
+	else if (argc > 1) {
 		data->command = argv[1];
 	}
 
