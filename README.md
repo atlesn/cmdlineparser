@@ -20,6 +20,11 @@ for later retrieval or converting to numeric types.
 9. Run `cmd_check_all_args_used()` to make sure there aren't any more arguments we haven't
    used. Returns 0 on success and 1 on failure.
 
+# Configuration
+`cmd_parse()` takes a configuration argument with parameters which can be ORed together:
+- `CMD_CONFIG_DEFAULTS`: If left alone, defaults are used
+- `CMD_CONFIG_NOCOMMAND`: Treat the first argument as any other parameter instead of command
+
 # Memory usage
 Memory may be tuned with the parameters `CMD_MAXIMUM_CMDLINE_ARGS` and `CMD_MAXIMUM_CMDLINE_ARG_SIZE`. Memory
 usage on the stack (or heap if malloc'ed) is `CMD_MAXIMUM_CMDLINE_ARGS * CMD_MAXIMUM_CMDLINE_ARG_SIZE * 2`
