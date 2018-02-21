@@ -8,14 +8,16 @@ for later retrieval or converting to numeric types.
 3. Parse the command line with `cmd_parse()`. If we find argument=value pairs, these
    can be retrieved with `cmd_get_value()` which also returns `NULL` if the argument is
    not found.
-4. Use `cmd_get_argument()` to retrieve an argument at a specific location.
-5. Run `cmd_convert_XXX()` to convert a string to different numeric types. These
+4. The first argument is always considered to be a command. Check its value with
+   cmd_match() which returns 0 on a match.
+5. Use `cmd_get_argument()` to retrieve an argument at a specific location.
+6. Run `cmd_convert_XXX()` to convert a string to different numeric types. These
    functions returns 0 on success and 1 on failure.
-6. Retrieve numeric values by using the corresponding `cmd_get_XXX()`-functions. These
+7. Retrieve numeric values by using the corresponding `cmd_get_XXX()`-functions. These
    will crash the program if you haven't first converted the values.
-7. Use `cmd_get_last_argument()` to retrieve the last unused argument for instance after
+8. Use `cmd_get_last_argument()` to retrieve the last unused argument for instance after
    several argument=value-pairs already retrieved with the other functions.
-8. Run `cmd_check_all_args_used()` to make sure there aren't any more arguments we haven't
+9. Run `cmd_check_all_args_used()` to make sure there aren't any more arguments we haven't
    used. Returns 0 on success and 1 on failure.
 
 # Memory usage
