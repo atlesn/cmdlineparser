@@ -8,7 +8,7 @@ for later retrieval or converting to numeric types.
 3. Parse the command line with `cmd_parse()`. If we find `argument=value` pairs, these
    can be retrieved with `cmd_get_value()` which also returns `NULL` if the argument is
    not found.
-4. The first argument is considered to be a command unless CMD_CONFIG_NOCOMMAND is given
+4. The first argument is considered to be a command unless `CMD_CONFIG_NOCOMMAND` is given
    as configuration parameter to `cmd_parse()`. Check the command with `cmd_match()`
    which returns `0` on a match.
 5. Use `cmd_get_argument()` to retrieve an argument at a specific location.
