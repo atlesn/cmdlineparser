@@ -5,20 +5,21 @@ for later retrieval or converting to numeric types.
 # Usage
 1. Have a look at cmdline.h for function overview and syntax
 2. Allocate memory by defining `struct cmd_data data;`
-3. Parse the command line with `cmd_parse()`. If we find argument=value pairs, these
+3. Parse the command line with `cmd_parse()`. If we find `argument=value` pairs, these
    can be retrieved with `cmd_get_value()` which also returns `NULL` if the argument is
    not found.
-4. The first argument is always considered to be a command. Check its value with
-   cmd_match() which returns 0 on a match.
+4. The first argument is considered to be a command unless CMD_CONFIG_NOCOMMAND is given
+   as configuration parameter to `cmd_parse()`. Check the command with `cmd_match()`
+   which returns `0` on a match.
 5. Use `cmd_get_argument()` to retrieve an argument at a specific location.
 6. Run `cmd_convert_XXX()` to convert a string to different numeric types. These
-   functions returns 0 on success and 1 on failure.
+   functions returns `0` on success and `1` on failure.
 7. Retrieve numeric values by using the corresponding `cmd_get_XXX()`-functions. These
    will crash the program if you haven't first converted the values.
 8. Use `cmd_get_last_argument()` to retrieve the last unused argument for instance after
-   several argument=value-pairs already retrieved with the other functions.
+   several `argument=value`-pairs already retrieved with the other functions.
 9. Run `cmd_check_all_args_used()` to make sure there aren't any more arguments we haven't
-   used. Returns 0 on success and 1 on failure.
+   used. Returns `0` on success and `1` on failure.
 
 # Configuration
 `cmd_parse()` takes a configuration argument with parameters which can be ORed together:
