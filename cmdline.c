@@ -51,214 +51,108 @@ int cmd_check_all_args_used(struct cmd_data *data) {
 	}
 	return err;
 }
-
-int cmd_get_value_index(struct cmd_data *data, const char *key) {
+/*
+int cmd_get_value_index(struct cmd_data *data, const char *key, unsigned long int index) {
+	unsigned long int index_counter == 0;
 	for (int i = 0; i < CMD_ARGUMENT_MAX && data->arg_pairs[i].key[0] != '\0'; i++) {
-		if (strcmp(data->arg_pairs[i].key, key) == 0) {
+		if (strcmp(data->arg_pairs[i].key, key) == 0 && index_counter++ == index) {
 			return i;
 		}
 	}
 
 	return -1;
+}*/
+
+struct cmd_arg_pair *cmd_find_pair(struct cmd_data *data, const char *key, unsigned long int index) {
+	unsigned long int index_counter = 0;
+	for (int i = 0; i < CMD_ARGUMENT_MAX && data->arg_pairs[i].key[0] != '\0'; i++) {
+		if (strcmp(data->arg_pairs[i].key, key) == 0 && index_counter++ == index) {
+			data->args_used[i] = 1;
+			return &data->arg_pairs[i];
+		}
+	}
+	return NULL;
 }
 
-int cmd_convert_hex_byte(struct cmd_data *data, const char *key) {
-	int index = cmd_get_value_index(data, key);
-	if (index == -1) {
-		return 1;
-	}
-
-	if (data->arg_pairs[index].hex_is_converted) {
-		return 0;
-	}
+int cmd_convert_hex_byte(struct cmd_data *data, const char *value, char *result) {
 
 	char *err;
-	long int intermediate = strtol(data->arg_pairs[index].value, &err, 16);
+	long int intermediate = strtol(value, &err, 16);
 
 	if (err[0] != '\0' || intermediate < 0 || intermediate > 0xff) {
 		return 1;
 	}
 
-	data->arg_pairs[index].value_hex = intermediate;
-	data->arg_pairs[index].hex_is_converted = 1;
-
-	#ifdef CMD_DBG_CMDLINE
-
-	printf ("Converted argument with key '%s' to hex '%x'\n", key, data->arg_pairs[index].value_hex);
-
-	#endif
+	*result = intermediate;
 
 	return 0;
 }
 
-int cmd_convert_hex_64(struct cmd_data *data, const char *key) {
-	int index = cmd_get_value_index(data, key);
-	if (index == -1) {
-		return 1;
-	}
-
-	if (data->arg_pairs[index].hex64_is_converted) {
-		return 0;
-	}
-
+int cmd_convert_hex_64(struct cmd_data *data, const char *value, uint64_t *result) {
 	char *err;
-	uint64_t intermediate = strtoull(data->arg_pairs[index].value, &err, 16);
+	uint64_t intermediate = strtoull(value, &err, 16);
 
 	if (err[0] != '\0') {
 		return 1;
 	}
 
-	data->arg_pairs[index].value_hex_64 = intermediate;
-	data->arg_pairs[index].hex64_is_converted = 1;
-
-	#ifdef CMD_DBG_CMDLINE
-
-	printf ("Converted argument with key '%s' to hex64 '%" PRIx64 "'\n", key, data->arg_pairs[index].value_hex_64);
-
-	#endif
+	*result = intermediate;
 
 	return 0;
 }
 
-int cmd_convert_uint64_10(struct cmd_data *data, const char *key) {
-	int index = cmd_get_value_index(data, key);
-	if (index == -1) {
-		return 1;
-	}
-
-	if (data->arg_pairs[index].uint64_is_converted == 1) {
-		return 0;
-	}
-
+int cmd_convert_uint64_10(struct cmd_data *data, const char *value, uint64_t *result) {
 	char *err;
-	data->arg_pairs[index].value_uint_64 = strtoull(data->arg_pairs[index].value, &err, 10);
+	*result = strtoull(value, &err, 10);
 
 	if (err[0] != '\0') {
 		return 1;
 	}
 
-	data->arg_pairs[index].uint64_is_converted = 1;
-
-	#ifdef CMD_DBG_CMDLINE
-
-	printf ("Converted argument with key '%s' to uint64 %'" PRIx64 "'\n", key, data->arg_pairs[index].value_uint_64);
-
-	#endif
-
 	return 0;
 }
 
-int cmd_convert_integer_10(struct cmd_data *data, const char *key) {
-	int index = cmd_get_value_index(data, key);
-	if (index == -1) {
-		return 1;
-	}
-
-	if (data->arg_pairs[index].integer_is_converted) {
-		return 0;
-	}
-
+int cmd_convert_integer_10(struct cmd_data *data, const char *value, int *result) {
 	char *err;
-	data->arg_pairs[index].value_int = strtol(data->arg_pairs[index].value, &err, 10);
+	*result = strtol(value, &err, 10);
 
 	if (err[0] != '\0') {
 		return 1;
 	}
 
-	data->arg_pairs[index].integer_is_converted = 1;
-
-	#ifdef CMD_DBG_CMDLINE
-
-	printf ("Converted argument with key '%s' to integer '%ld'\n", key, data->arg_pairs[index].value_int);
-
-	#endif
-
 	return 0;
 }
 
-char cmd_get_hex_byte(struct cmd_data *data, const char *key) {
-	int index = cmd_get_value_index(data, key);
-
-	if (index == -1) {
-		fprintf(stderr, "Bug: Called cmd_get_hex with unknown key '%s'\n", key);
+const char *cmd_get_subvalue(struct cmd_data *data, const char *key, unsigned long int req_index, unsigned long int sub_index) {
+	if (req_index > CMD_ARGUMENT_MAX) {
+		fprintf (stderr, "Requested cmd value index out of range\n");
 		exit (EXIT_FAILURE);
 	}
 
-	if (data->arg_pairs[index].hex_is_converted != 1) {
-		fprintf(stderr, "Bug: Called cmd_get_hex without cmd_convert_hex being called first\n");
+	if (sub_index > CMD_ARGUMENT_MAX) {
+		fprintf (stderr, "Requested cmd sub value index out of range");
 		exit (EXIT_FAILURE);
 	}
 
-	data->args_used[index] = 1;
+	struct cmd_arg_pair *pair = cmd_find_pair(data, key, req_index);
+	if (pair == NULL) {
+		return NULL;
+	}
 
-	return data->arg_pairs[index].value_hex;
+	return pair->sub_values[sub_index];
 }
 
-uint64_t cmd_get_hex_64(struct cmd_data *data, const char *key) {
-	int index = cmd_get_value_index(data, key);
+const char *cmd_get_value(struct cmd_data *data, const char *key, unsigned long int index) {
+	unsigned long int index_counter = 0;
 
-	if (index == -1) {
-		fprintf(stderr, "Bug: Called cmd_get_hex_64 with unknown key '%s'\n", key);
+	if (index > CMD_ARGUMENT_MAX) {
+		fprintf (stderr, "Requested cmd value index out of range\n");
 		exit (EXIT_FAILURE);
 	}
 
-	if (data->arg_pairs[index].hex64_is_converted != 1) {
-		fprintf(stderr, "Bug: Called cmd_get_hex_64 without cmd_convert_hex_64 being called first\n");
-		exit (EXIT_FAILURE);
-	}
-
-	data->args_used[index] = 1;
-
-	return data->arg_pairs[index].value_hex_64;
-}
-
-long int cmd_get_integer(struct cmd_data *data, const char *key) {
-	int index = cmd_get_value_index(data, key);
-
-	if (index == -1) {
-		fprintf(stderr, "Bug: Called cmd_get_integer with unknown key '%s'\n", key);
-		exit (EXIT_FAILURE);
-	}
-
-	if (data->arg_pairs[index].integer_is_converted != 1) {
-		fprintf(stderr, "Bug: Called cmd_get_integer without cmd_convert_integer being called first\n");
-		exit (EXIT_FAILURE);
-	}
-	data->args_used[index] = 1;
-
-	return data->arg_pairs[index].value_int;
-}
-
-uint64_t cmd_get_uint64(struct cmd_data *data, const char *key) {
-	int index = cmd_get_value_index(data, key);
-
-	if (index == -1) {
-		fprintf(stderr, "Bug: Called cmd_get_uint64 with unknown key '%s'\n", key);
-		exit (EXIT_FAILURE);
-	}
-
-	#ifdef CMD_DBG_CMDLINE
-	if (data->arg_pairs[index].uint64_is_converted != 1) {
-		fprintf(stderr, "Bug: Called cmd_get_uint64 without cmd_convert_uint64 being called first\n");
-		exit (EXIT_FAILURE);
-	}
-	#endif
-
-	data->args_used[index] = 1;
-
-	return data->arg_pairs[index].value_uint_64;
-}
-
-const char *cmd_get_value(struct cmd_data *data, const char *key) {
-	for (int i = 0; i < CMD_ARGUMENT_MAX && data->arg_pairs[i].key[0] != '\0'; i++) {
-		if (strcmp(data->arg_pairs[i].key, key) == 0) {
-			#ifdef CMD_DBG_CMDLINE
-			printf ("Retrieve string argument %s: %s\n", key, data->arg_pairs[i].value);
-			#endif
-
-			data->args_used[i] = 1;
-			return data->arg_pairs[i].value;
-		}
+	struct cmd_arg_pair *pair = cmd_find_pair(data, key, index);
+	if (pair != NULL) {
+		return pair->value;
 	}
 
 	return NULL;
@@ -281,6 +175,29 @@ const char *cmd_get_last_argument(struct cmd_data *data) {
 		}
 	}
 	return NULL;
+}
+
+void cmd_pair_split_comma(struct cmd_arg_pair *pair) {
+	unsigned long int sub_value_counter = 0;
+	const char *pos = pair->value;
+	const char *end = pos + strlen(pos);
+	while (pos < end) {
+		const char *comma_pos = strstr(pos, ",");
+		if (comma_pos == NULL) {
+			comma_pos = end;
+		}
+		unsigned long int length = comma_pos - pos;
+		printf ("Found comma or end length %lu\n", length);
+		memcpy(pair->sub_values[sub_value_counter], pos, length);
+		pair->sub_values[sub_value_counter][length] = '\0';
+
+		pos = comma_pos + 1;
+		sub_value_counter++;
+		if (sub_value_counter == CMD_ARGUMENT_MAX) {
+			fprintf(stderr, "Too many comma separated values, maximum is %i\n", CMD_ARGUMENT_MAX);
+			exit(EXIT_FAILURE);
+		}
+	}
 }
 
 int cmd_parse(struct cmd_data *data, int argc, const char *argv[], unsigned long int config) {
@@ -328,7 +245,6 @@ int cmd_parse(struct cmd_data *data, int argc, const char *argv[], unsigned long
 					fprintf (stderr, "Error: Syntax error with = syntax in argument %i ('%s'), use key=value\n", i, data->args[i]);
 					return 1;
 				}
-
 				if (key_length > CMD_ARGUMENT_SIZE - 1) {
 					fprintf (stderr, "Error: Argument key %i too long ('%s'), maximum size is %i\n", i, data->args[i], CMD_ARGUMENT_SIZE - 1);
 					return 1;
@@ -343,6 +259,10 @@ int cmd_parse(struct cmd_data *data, int argc, const char *argv[], unsigned long
 
 				strncpy(data->arg_pairs[pairs_pos].value, value, value_length);
 				data->arg_pairs[pairs_pos].value[value_length] = '\0';
+
+				if ((config & CMD_CONFIG_SPLIT_COMMA) != 0) {
+					cmd_pair_split_comma(&data->arg_pairs[pairs_pos]);
+				}
 
 				pairs_pos++;
 			}

@@ -33,23 +33,17 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #ifdef CMD_MAXIMUM_CMDLINE_ARG_SIZE
 #define CMD_ARGUMENT_SIZE CMD_MAXIMUM_CMDLINE_ARG_SIZE
 #else
-#define CMD_ARGUMENT_SIZE 4096
+#define CMD_ARGUMENT_SIZE 256
 #endif 
 
-#define CMD_CONFIG_DEFAULTS 0
-#define CMD_CONFIG_NOCOMMAND 1
+#define CMD_CONFIG_DEFAULTS			0
+#define CMD_CONFIG_NOCOMMAND		(1<<0)
+#define CMD_CONFIG_SPLIT_COMMA	 	(1<<1)
 
 struct cmd_arg_pair {
 	char key[CMD_ARGUMENT_SIZE];
 	char value[CMD_ARGUMENT_SIZE];
-	long int value_int;
-	unsigned char value_hex;
-	uint64_t value_hex_64;
-	uint64_t value_uint_64;
-	int integer_is_converted;
-	int hex_is_converted;
-	int hex64_is_converted;
-	int uint64_is_converted;
+	char sub_values[CMD_ARGUMENT_MAX][CMD_ARGUMENT_SIZE];
 };
 
 struct cmd_data {
@@ -63,18 +57,15 @@ struct cmd_data {
 int cmd_parse					(struct cmd_data *data, const int argc, const char *argv[], unsigned long int config);
 int cmd_match					(struct cmd_data *data, const char *test);
 
-int cmd_convert_hex_64				(struct cmd_data *data, const char *key);
-int cmd_convert_hex_byte			(struct cmd_data *data, const char *key);
-int cmd_convert_integer_10			(struct cmd_data *data, const char *key);
-int cmd_convert_uint64_10			(struct cmd_data *data, const char *key);
+int cmd_convert_hex_byte		(struct cmd_data *data, const char *value, char *result);
+int cmd_convert_hex_64			(struct cmd_data *data, const char *value, uint64_t *result);
+int cmd_convert_uint64_10		(struct cmd_data *data, const char *value, uint64_t *result);
+int cmd_convert_integer_10		(struct cmd_data *data, const char *value, int *result);
 
-char cmd_get_hex_byte				(struct cmd_data *data, const char *key);
-uint64_t cmd_get_hex_64				(struct cmd_data *data, const char *key);
-long int cmd_get_integer			(struct cmd_data *data, const char *key);
-uint64_t cmd_get_uint64				(struct cmd_data *data, const char *key);
-const char *cmd_get_argument			(struct cmd_data *data, int index);
-const char *cmd_get_last_argument		(struct cmd_data *data);
-const char *cmd_get_value			(struct cmd_data *data, const char *key);
+const char *cmd_get_argument		(struct cmd_data *data, int index);
+const char *cmd_get_last_argument	(struct cmd_data *data);
+const char *cmd_get_value			(struct cmd_data *data, const char *key, unsigned long int index);
+const char *cmd_get_subvalue		(struct cmd_data *data, const char *key, unsigned long int index, unsigned long int subindex);
 
 int cmd_check_all_args_used			(struct cmd_data *data);
 
