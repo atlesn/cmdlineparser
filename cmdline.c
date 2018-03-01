@@ -123,6 +123,17 @@ int cmd_convert_integer_10(struct cmd_data *data, const char *value, int *result
 	return 0;
 }
 
+int cmd_convert_float(struct cmd_data *data, const char *value, float *result) {
+	char *err;
+	*result = strtof(value, &err);
+
+	if (err[0] != '\0') {
+		return 1;
+	}
+
+	return 0;
+}
+
 const char *cmd_get_subvalue(struct cmd_data *data, const char *key, unsigned long int req_index, unsigned long int sub_index) {
 	if (req_index > CMD_ARGUMENT_MAX) {
 		fprintf (stderr, "Requested cmd value index out of range\n");

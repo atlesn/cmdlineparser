@@ -61,6 +61,7 @@ int cmd_convert_hex_byte		(struct cmd_data *data, const char *value, char *resul
 int cmd_convert_hex_64			(struct cmd_data *data, const char *value, uint64_t *result);
 int cmd_convert_uint64_10		(struct cmd_data *data, const char *value, uint64_t *result);
 int cmd_convert_integer_10		(struct cmd_data *data, const char *value, int *result);
+int cmd_convert_float			(struct cmd_data *data, const char *value, float *result);
 
 const char *cmd_get_argument		(struct cmd_data *data, int index);
 const char *cmd_get_last_argument	(struct cmd_data *data);
